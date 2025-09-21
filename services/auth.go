@@ -16,12 +16,14 @@ type RegisterRequest struct {
 	LastName  string `json:"last_name" validate:"required"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=6"`
+	Role	  string `json:"role`
 }
 
 func Login(c *fiber.Ctx) error {
 	var body struct {
 		Email    string `json:"email" validate:"required,email"`
 		Password string `json:"password" validate:"required"`
+		Role     string `json:"role"`
 	}
 
 	if err := c.BodyParser(&body); err != nil {
@@ -70,11 +72,17 @@ func Register(c *fiber.Ctx) error {
 		})
 	}
 
+	userRole := "user"
+	if body.Role != ""{
+		userRole = body.Role
+	}
+
 	user := models.User{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
 		Password:  string(hashedPassword),
+		Role:	  userRole,
 	}
 
 	result := config.DB.Create(&user)
@@ -96,6 +104,7 @@ func Register(c *fiber.Ctx) error {
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 		"email":      user.Email,
+		"role":       user.Role,
 	}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
